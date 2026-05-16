@@ -39,3 +39,25 @@ On every DVR start, firmware rewrites `record.type` from UI settings:
 - Parser only accepts `mp4`/`ts`; unsupported values fall back to default `REC_packTYPE` (`ts`) (`src/record/confparser.c`, `src/record/record_definitions.h`).
 
 So manual mode affects start/stop behavior, but container choice is still enforced from firmware settings and parser rules.
+
+## 5) Did backpack changes address any of these issues?
+
+Partly, but only for ELRS/MSP channel handling:
+
+- `cc50f3b` (`fix elrs lowband support`) added lowband-aware reporting/sending in `src/core/elrs.c`.
+- `c96f1d2` (`elrs support E1 and F1 channel`) improved raceband channel coverage.
+- `480bc61` (`Fix ELRS MSP channel and frequency handlings`) refactored ELRS MSP channel/frequency logic.
+- `2b6761b` (`Fix ELRS baclpack DVR timed start/stop logic`) only addressed timed DVR commands from the backpack.
+
+These commits do **not** add exFAT support, do **not** unify Low band into the wheel menu, and do **not** change the DVR config rewrite behavior described above.
+
+## 6) Why ELRS Backpack still cannot switch to Lowband when requested
+
+Current ELRS receive-side logic can describe/send lowband, but it still cannot switch the goggles into lowband from an incoming backpack request:
+
+- `MSP_SET_BAND_CHAN` converts backpack index to a plain HDZero channel through `hdz_index2ch()` (`src/core/elrs.c`).
+- `hdzero_channel_map` leaves all Lowband entries as `0`, so incoming L1-L8 indices do not map to valid HDZero channels.
+- `channel_channel_hdzero()` only sets `g_setting.scan.channel`; it does **not** update `g_setting.source.hdzero_band`.
+- `MSP_SET_FREQ` has the same limitation: lowband frequencies resolve to indices whose reverse map is `0`, so they are rejected.
+
+So the backpack can work with Lowband only if the goggles are **already** in Lowband. It cannot switch the band by itself because the incoming MSP path has no valid lowband reverse mapping and no band-change step.
