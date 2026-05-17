@@ -40,8 +40,9 @@ So Low band is modeled as a mode-level source setting, not a tune-time wheel sel
 | 3 | `src/core/app_state.c` | Ensure `app_switch_to_hdzero()` / `hdzero_switch_channel()` does a full re-init of the DM6302 when the band changes (it already calls `DM6302_SetChannel` with `g_setting.source.hdzero_band`, so the switch itself will be free if the band is updated before the call). |
 | 4 | `src/core/osd.c` | Update `channel2str()` callers so the OSD shows the correct band/channel label during tuning. |
 | 5 | `src/ui/page_source.c` | Keep the dedicated Band toggle working as a default/override, consistent with the combined wheel. |
+| 6 | `src/core/input_device.c` + `src/core/elrs.c` | Share one band/channel normalization path so wheel tuning and ExpressLRS backpack requests both auto-switch between Raceband and Lowband instead of drifting into separate behaviours. |
 
-**Feasibility:** Entirely self-contained in this repo. The only UX design question is whether the wheel wraps (L8 → R1) or stops at band boundaries.
+**Feasibility:** Entirely self-contained in this repo. The only UX design question is whether the wheel wraps (L8 → R1) or stops at band boundaries. To also support automatic Lowband in the ExpressLRS backpack, the wheel/menu changes should reuse the same band-selection helper as the MSP receive path instead of implementing separate logic.
 
 ## 3) Why manual recording can fail even when SD card appears mounted
 
@@ -114,5 +115,6 @@ So the backpack can work with Lowband only if the goggles are **already** in Low
 | 3 | `src/core/elrs.c` | In `MSP_SET_BAND_CHAN` handler, derive the target band from the incoming index (index 40–47 → Lowband, else Raceband) and pass it to the new helper. |
 | 4 | `src/core/elrs.c` | In `MSP_SET_FREQ` handler, do the same: after resolving `freq_index`, check whether `hdzero_channel_map[freq_index]` is Lowband-range and set the band accordingly. |
 | 5 | `src/ui/page_source.c` | After the band changes via MSP, update the source-page UI toggle so it stays in sync (`btn_group_set_sel(&btn_group1, g_setting.source.hdzero_band)`). |
+| 6 | `src/core/elrs.c` + `src/core/input_device.c` | Make this the shared implementation for automatic Lowband selection so any future wheel/menu changes also keep ExpressLRS backpack auto-Lowband working. |
 
-**Feasibility:** Fully self-contained in this repo. The hardware driver (`DM6302_SetChannel`) already accepts the band argument; `app_switch_to_hdzero()` already reads `g_setting.source.hdzero_band`. The only missing piece is setting that field before the switch.
+**Feasibility:** Fully self-contained in this repo. The hardware driver (`DM6302_SetChannel`) already accepts the band argument; `app_switch_to_hdzero()` already reads `g_setting.source.hdzero_band`. The only missing piece is setting that field before the switch and reusing that same helper everywhere channel changes can originate.
