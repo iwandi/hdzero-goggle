@@ -32,6 +32,18 @@
         inherit (self.packages.${system}) toolchain;
       };
 
+      # the boxpro app including the jffs2 image with service binaries
+      boxpro-app = pkgs.callPackage ./nix/boxpro-app.nix {
+        inherit hdzero-goggle-src;
+        inherit (self.packages.${system}) toolchain;
+      };
+
+      # the goggle2 app including the jffs2 image with service binaries
+      goggle2-app = pkgs.callPackage ./nix/goggle2-app.nix {
+        inherit hdzero-goggle-src;
+        inherit (self.packages.${system}) toolchain;
+      };
+
       # make the goggle app the default package
       default = self.packages.${system}.goggle-app;
 

@@ -91,7 +91,7 @@ Partly, but only for ELRS/MSP channel handling:
 - `cc50f3b` (`fix elrs lowband support`) added lowband-aware reporting/sending in `src/core/elrs.c`.
 - `c96f1d2` (`elrs support E1 and F1 channel`) improved raceband channel coverage.
 - `480bc61` (`Fix ELRS MSP channel and frequency handlings`) refactored ELRS MSP channel/frequency logic.
-- `2b6761b` (`Fix ELRS baclpack DVR timed start/stop logic`) only addressed timed DVR commands from the backpack.
+- `2b6761b` (`Fix ELRS backpack DVR timed start/stop logic`) only addressed timed DVR commands from the backpack.
 
 These commits do **not** add exFAT support, do **not** unify Low band into the wheel menu, and do **not** change the DVR config rewrite behavior described above.
 

@@ -44,16 +44,27 @@ Compiling HDZero BoxPro:
 The firmware is generated as hdzero-goggle/build_boxpro/out/HDZERO_BOXPRO-x.x.x.bin
 Where x.x.x is the OTA_VER.RX_VER.VA_VER
 
+Compiling HDZero Goggle2:
+```
+~/hdzero-goggle$ cd build_goggle2
+~/hdzero-goggle/build_goggle2$ make clean all -j $(nproc)
+```
+
+The firmware is generated as hdzero-goggle/build_goggle2/out/HDZERO_GOGGLE2-x.x.x.bin
+Where x.x.x is the OTA_VER.RX_VER.VA_VER
+
 ### Building the firmware using nix
 
 The nix build system can be used to build the firmware on any linux system.  
 Make sure that nix [is installed](https://nixos.org/download/), and the [flakes feature](https://wiki.nixos.org/wiki/Flakes) is enabled.  
 No bootstrapping or installation of any tools is required.
 
-Use this command to build the firmware
+Use one of the following commands to build the firmware for your target:
 
 ```shellSession
 nix build .#goggle-app
+nix build .#boxpro-app
+nix build .#goggle2-app
 ```
 
 After this succeeds, the firmware can be found under `./result` in the current directory.
