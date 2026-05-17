@@ -118,3 +118,41 @@ So the backpack can work with Lowband only if the goggles are **already** in Low
 | 6 | `src/core/elrs.c` + `src/core/input_device.c` | Make this the shared implementation for automatic Lowband selection so any future wheel/menu changes also keep ExpressLRS backpack auto-Lowband working. |
 
 **Feasibility:** Fully self-contained in this repo. The hardware driver (`DM6302_SetChannel`) already accepts the band argument; `app_switch_to_hdzero()` already reads `g_setting.source.hdzero_band`. The only missing piece is setting that field before the switch and reusing that same helper everywhere channel changes can originate.
+
+## 7) How to build a full firmware package (all targets)
+
+For a full firmware package (`*.bin` OTA bundle including app + RX + VA), build one of the target-specific build directories prepared by `setup.sh`.
+
+### Native/devcontainer flow
+
+1. Run setup once to bootstrap toolchain and generate all build directories:
+
+```bash
+./setup.sh
+```
+
+2. Build target firmware package(s):
+
+```bash
+cd build_goggle  && make clean all -j $(nproc)
+cd ../build_boxpro && make clean all -j $(nproc)
+cd ../build_goggle2 && make clean all -j $(nproc)
+```
+
+3. Output packages:
+
+- `build_goggle/out/HDZERO_GOGGLE-<OTA_VER>.<RX_VER>.<VA_VER>.bin`
+- `build_boxpro/out/HDZERO_BOXPRO-<OTA_VER>.<RX_VER>.<VA_VER>.bin`
+- `build_goggle2/out/HDZERO_GOGGLE2-<OTA_VER>.<RX_VER>.<VA_VER>.bin`
+
+### Nix flow
+
+Build the same target packages without local toolchain bootstrap:
+
+```bash
+nix build .#goggle-app
+nix build .#boxpro-app
+nix build .#goggle2-app
+```
+
+Result is placed under `./result` for the selected target.
