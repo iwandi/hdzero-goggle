@@ -156,3 +156,33 @@ nix build .#goggle2-app
 ```
 
 Result is placed under `./result` for the selected target.
+
+## 8) How to run/emulate this project on Windows for testing
+
+### What already exists (this repo)
+
+- Emulator build is already supported through `EMULATOR_BUILD=ON` with SDL2 (`CMakeLists.txt`, `README.md`).
+- Devcontainer workflow is already provided (`.devcontainer/devcontainer.json`, `.devcontainer/Dockerfile`).
+- CI/build workflows run on Linux only (`runs-on: ubuntu-latest` in `.github/workflows/build_and_release_*.yml`).
+- There is no dedicated automated unit/integration test suite in this repo; current automation is build/package oriented.
+
+### What exists in related HDZero repos on GitHub
+
+- `hd-zero/hdzero-goggle`, `hd-zero/hdzero-boxpro`, and `hd-zero/hdzero-goggle2` all use the same Linux-first pattern:
+  - Linux/devcontainer build instructions in `readme.md`/`README.md`.
+  - Emulator section based on SDL2 host build.
+  - GitHub Actions build workflows on `ubuntu-latest`.
+- No Windows-native CI workflow or Windows-native emulator/test harness was found in those repos.
+
+### Windows testing/emulation plan
+
+| Step | Approach | Goal |
+|------|----------|------|
+| 1 | Use **Windows + WSL2 (Ubuntu)** as the primary path. Clone inside WSL filesystem (not Windows unzip path). | Avoid known file corruption/path issues and match Linux toolchain assumptions. |
+| 2 | Build emulator in WSL using existing flow (`cmake .. -DEMULATOR_BUILD=ON ...`, `make`, run `./HDZGOGGLE`). | Fast local UI/input smoke testing without flashing hardware. |
+| 3 | Use VS Code Remote/Dev Containers from Windows with existing `.devcontainer` config as alternative. | Reproducible environment close to CI/dev setup. |
+| 4 | Add a small documented smoke-test checklist for emulator runs (menu navigation, channel tuning, DVR start/stop paths). | Standardize manual regression testing on Windows hosts. |
+| 5 | (Optional) Add a non-blocking GitHub Action emulator build job (Linux) to ensure `EMULATOR_BUILD` does not regress. | Catch host-emulator build breakages early. |
+| 6 | (Optional) Investigate native Windows (MSYS2/MinGW) only after WSL2 path is stable. | Defer high-effort porting work not currently required by repo/tooling. |
+
+**Recommendation:** For practical Windows testing now, use WSL2 or devcontainers; both align with current repository tooling and upstream HDZero ecosystem practices.
